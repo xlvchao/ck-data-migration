@@ -1,0 +1,27 @@
+#!/bin/bash
+
+ip="127.0.0.1"
+database_pro="aiops_local_pro"
+database_prd="aiops_local_prd"
+tables=("aiops_collect_1" "aiops_collect_5" "aiops_collect_7" "aiops_collect_11" "aiops_collect_12" "aiops_collect_13" "aiops_collect_14" "aiops_collect_15" "aiops_collect_16" "aiops_collect_17" "aiops_collect_18" "aiops_collect_19" "aiops_collect_20" "aiops_collect_21" "aiops_collect_22" "aiops_collect_23" "aiops_collect_24" "aiops_collect_25" "aiops_collect_26" "aiops_collect_27" "aiops_collect_28" "aiops_collect_29" "aiops_collect_30" "aiops_collect_34" "aiops_collect_35" "aiops_collect_36" "aiops_collect_37" "aiops_collect_38" "aiops_collect_39" "aiops_collect_40" "aiops_collect_41" "aiops_collect_42" "aiops_collect_43" "aiops_collect_44" "aiops_collect_50" "aiops_collect_52" "aiops_collect_53" "aiops_collect_54" "aiops_collect_55" "aiops_collect_62" "aiops_collect_68" "aiops_collect_69" "aiops_collect_76" "aiops_collect_77" "aiops_collect_78" "aiops_collect_79" "aiops_collect_80" "aiops_collect_87" "aiops_collect_88" "aiops_collect_89" "aiops_collect_90" "aiops_collect_97" "aiops_collect_101" "aiops_collect_102" "aiops_collect_103" "aiops_collect_104" "aiops_collect_116" "aiops_collect_177" "aiops_collect_27448000" "aiops_collect_27448001" "aiops_collect_27448002" "aiops_collect_100000002" "aiops_collect_100000003" "aiops_collect_100000004" "aiops_collect_100000005" "aiops_collect_100000006" "aiops_collect_100000007" "aiops_collect_100000008" "aiops_collect_100000009" "aiops_collect_100000015" "aiops_collect_100000016" "aiops_collect_100000017" "aiops_collect_100000018" "aiops_collect_100000019" "aiops_collect_100000020" "aiops_collect_100000021" "aiops_collect_100000022" "aiops_collect_100000023" "aiops_collect_100000024" "aiops_collect_100000025" "aiops_collect_100000026" "aiops_collect_100000027" "aiops_collect_100000028" "aiops_collect_100000029" "aiops_collect_100000030" "aiops_collect_100000031" "aiops_collect_100000032" "aiops_collect_100000033" "aiops_collect_100000035" "aiops_collect_100000036" "aiops_collect_100000037" "aiops_collect_100000038" "aiops_collect_100000040" "aiops_collect_100000041" "aiops_collect_100000042" "aiops_collect_100000043" "aiops_collect_100000045" "aiops_collect_100000046" "aiops_collect_100000048" "aiops_collect_100000049" "aiops_collect_100000050" "aiops_collect_100000051" "aiops_collect_100000052" "aiops_collect_100000053" "aiops_collect_100000055" "aiops_collect_100000056" "aiops_collect_100000066" "aiops_collect_100000069" "aiops_collect_100000070" "aiops_collect_100000071" "aiops_collect_100000074" "aiops_collect_100000075" "aiops_collect_100000077" "aiops_collect_100000078" "aiops_collect_100000079" "aiops_collect_100000081" "aiops_collect_100000084" "aiops_collect_100000090" "aiops_collect_100000091" "aiops_collect_100000092" "aiops_collect_100000093" "aiops_collect_100000094" "aiops_collect_100000095" "aiops_collect_100000097" "aiops_collect_100000098" "aiops_collect_100000099" "aiops_collect_100000100" "aiops_collect_400000001" "aiops_collect_400000002" "aiops_collect_400000003" "aiops_collect_400000012" "aiops_collect_400000036" "aiops_collect_900000127" "aiops_collect_900000156" "aiops_collect_900000157" "aiops_collect_900000177" "aiops_collect_900000186" "aiops_collect_900000189" "aiops_collect_900000223" "aiops_collect_900000227")
+partitions=("20230527" "20230528" "20230529" "20230530" "20230531" "20230601" "20230602" "20230603" "20230604")         
+
+mkdir -p /data01/chwork/ch_download/
+
+for table in ${tables[@]}
+  do
+   for partition in ${partitions[@]}
+     do
+       clickhouse-client --host ${ip} --port 9000 --user default --password Aiopschpro@2022 --query "SELECT * FROM ${database_pro}.${table} where toYYYYMMDD(time)= ${partition} FORMAT Native" > /data01/chwork/ch_download/${database_pro}.${table}.${partition}.native
+   done
+   echo "${database_pro}.${table} data has been successfully copied!"
+done
+
+for table in ${tables[@]}
+  do
+   for partition in ${partitions[@]}
+     do
+       clickhouse-client --host ${ip} --port 9000 --user default --password Aiopschpro@2022 --query "insert into ${database_prd}.${table} FORMAT Native" < /data01/chwork/ch_download/${database_pro}.${table}.${partition}.native
+   done
+   echo "${database_prd}.${table} data has been successfully restored!"
+done
